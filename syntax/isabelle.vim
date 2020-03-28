@@ -97,54 +97,18 @@ if exists('s:current_syntax')
 else
   unlet b:current_syntax
 endif
-syntax region IsabelleCommand matchgroup=SpecialComment fold start="ML\_s*\({\*\|\\<open>\)" end="\(\*}\|\\<close>\)" contains=@SML
-syntax region IsabelleCommand matchgroup=SpecialComment fold start="method_setup\_s*\a\w*\_s*=\_s*\({\*\|\\<open>\)" end="\(\*}\|\\<close>\)\_s*\(\"[^\"]*\"\)\?" contains=@SML
+syntax region IsabelleCommand matchgroup=IsabelleSpecial fold start="ML\_s*\({\*\|\\<open>\)" end="\(\*}\|\\<close>\)" contains=@SML,IsabelleAntiquote
+syntax region IsabelleCommand matchgroup=IsabelleSpecial fold start="method_setup\_s*\a\w*\_s*=\_s*\({\*\|\\<open>\)" end="\(\*}\|\\<close>\)\_s*\(\"[^\"]*\"\)\?" contains=@SML,IsabelleAntiquote
 
-" Excessively complicated way of matching (* ... *) comments to support nested
-" blocks.
-syntax region IsabelleComment matchgroup=IsabelleComment start="(\*" end="\*)" contains=IsabelleCommentStart
-syntax match IsabelleCommentStart "(\*" contained nextgroup=IsabelleCommentContent contains=IsabelleCommentStart
-syntax match IsabelleCommentContent ".*" contained
+" Supports nested blocks
+syntax region IsabelleComment start=/(\*/ end=/\*)/ contains=IsabelleComment
 
-" You can use LaTeX within text {* ... *} blocks and friends and sometimes it
-" is useful to have syntax highlighting enabled within these blocks when
-" working on a PDF-destined theory. This is off by default because it can be a
-" little distracting when not working on documentation. You can put something
-" like the following in your ~/.vimrc for easy toggling of LaTeX syntax:
-"
-"   function! ToggleIsabelleTex()
-"     if exists('g:isabelle_tex')
-"       let g:isabelle_tex = !g:isabelle_tex
-"     else
-"       let g:isabelle_tex=1
-"     endif
-"     syntax off
-"     syntax on
-"   endfunction
-"   nm <F8> :call ToggleIsabelleTex()<CR>
-"   imap <F8> <C-o>:call ToggleIsabelleTex()<CR>
-"
-if exists('g:isabelle_tex') && g:isabelle_tex == 1
-  if exists('b:current_syntax')
-    let s:current_syntax=b:current_syntax
-    unlet b:current_syntax
-  endif
-  syntax include @TEX syntax/tex.vim
-  if exists('s:current_syntax')
-    let b:current_syntax=s:current_syntax
-  else
-    unlet b:current_syntax
-  endif
-  syntax region IsabelleCommand matchgroup=IsabelleComment fold start="\(chapter\|text\|txt\|header\|\(sub\)*section\)[ ]*{\*" end="\*}" contains=@TEX
-  " The TeX syntax meddles with iskeyword and thereby screws up syntax
-  " highlighting for anything involving an underscore after it has been loaded.
-  " Reset this here.
-  set iskeyword+=_
-else
-  " If g:isabelle_tex is not set, just highlight these blocks as normal
-  " comments.
-  syn match IsabelleComment "\(chapter\|text\|txt\|header\|\(sub\)*section\)[ ]*{\*\_.\{-}\*}"
-endif
+" Highlighting of text regions
+syntax region IsabelleText matchgroup=SpecialComment fold start="\(chapter\|text\|txt\|header\|\(sub\)*section\)[ ]*\({\*\|\\<open>\)" end="\(\\<close>\|\*}\)" contains=IsabelleMarkup,IsabelleAntiquote
+syntax region IsabelleAntiquote start="@{" end="}" contains=Isabelle
+syntax region IsabelleMarkup matchgroup=IsabelleSpecial start="\(\\<^\i\+>\)\?\\<open>" cchar=‹ end="\\<close>" contained concealends cchar=›
+
+
 
 syn keyword IsabelleCommandPart and is
 syn keyword IsabelleCommandPart assumes constrains defines shows fixes notes
@@ -659,6 +623,9 @@ hi def link IsabelleComment Comment
 hi def link IsabelleCommentStart Comment
 hi def link IsabelleCommentContent Comment
 
+hi link IsabelleText String
+hi link IsabelleMarkup Keyword
+
 hi link IsabelleCommand           Keyword
 hi link IsabelleCommandPart       Operator
 hi link IsabelleCommandMod        Statement
@@ -667,7 +634,7 @@ hi link IsabelleSpecial           Special
 hi link IsabelleCommandProofProve Keyword
 hi link IsabelleCommandProofIsar  Keyword
 hi link IsabelleGoalProofIsar     Keyword
-hi link IsabelleCommandProofDone  ctermfg=2 cterm=bold guifg=green gui=bold
+hi link IsabelleCommandProofDone  Special
 hi link IsabelleCommandProofFail  Error
 hi link IsabelleCommandProofBad   Error
 hi link IsabelleCommandRule       Keyword
