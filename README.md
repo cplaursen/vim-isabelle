@@ -8,4 +8,4 @@ Install using a vim plugin manager. For example, if using [vim-plug](https://git
 
 Currently in development 
 
-Taken and adapted from a file in the [l4v](https://github.com/seL4/l4v/tree/master/misc/vim) repository
+Taken and adapted from a couple files in the [l4v](https://github.com/seL4/l4v/tree/master/misc/vim) repository

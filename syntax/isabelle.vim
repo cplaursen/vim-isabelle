@@ -9,9 +9,8 @@
 "
 " Parts of this file were originally contributed by
 " Jens-Wolfhard Schicke-Uffmann <drahflow@gmx.de>
-"
-
-"
+" 
+" 
 " Vim syntax highlighting for THY files.
 "
 " This syntax will show UTF-8 Isabelle symbols if you have concealling enabled.
@@ -104,11 +103,11 @@ syntax region IsabelleCommand matchgroup=IsabelleSpecial fold start="method_setu
 syntax region IsabelleComment start=/(\*/ end=/\*)/ contains=IsabelleComment
 
 " Highlighting of text regions
-syntax region IsabelleText matchgroup=SpecialComment fold start="\(chapter\|text\|txt\|header\|\(sub\)*section\)[ ]*\({\*\|\\<open>\)" end="\(\\<close>\|\*}\)" contains=IsabelleMarkup,IsabelleAntiquote
-syntax region IsabelleAntiquote start="@{" end="}" contains=Isabelle
-syntax region IsabelleMarkup matchgroup=IsabelleSpecial start="\(\\<^\i\+>\)\?\\<open>" cchar=‹ end="\\<close>" contained concealends cchar=›
-
-
+syntax region IsabelleText matchgroup=IsabelleRegionTag fold start="\(chapter\|text\|text_raw\|txt\|header\|\(sub\)*section\)[ ]*\({\*\|\\<open>\)" end="\(\\<close>\|\*}\)" contains=IsabelleMarkup,IsabelleAntiquote
+syntax region IsabelleAntiquote start="@{" end="}" contains=Isabelle containedin=IsabelleCommand, IsabelleText extend
+syntax region IsabelleMarkup matchgroup=IsabelleRegionTag start="\(\\<^\i\+>\)\?[ ]*\\<open>" end="\\<close>"
+syntax match IsabelleRegionTag /\(\\<^?\i\+>\)\?\\<open>/ conceal cchar=‹
+syntax match IsabelleRegionTag /\\<close>/ conceal cchar=›
 
 syn keyword IsabelleCommandPart and is
 syn keyword IsabelleCommandPart assumes constrains defines shows fixes notes
@@ -612,11 +611,11 @@ syn cluster IsabelleInnerStuff contains=IsabelleSpecial
 syn region IsabelleLemmaFold
     \ start="\(\<\(schematic_\)\?\(corollary\|lemma\|theorem\)\>\|have\|show\)\@<="
     \ end="\<\(done\|by\|qed\|apply_end\|oops\|sorry\)\>"
-    \ fold keepend transparent
+    \ fold contains=IsabelleText
 syn region IsabelleLocaleFold
     \ start="\(\<\(sub\)\?locale\>\)\@<="
     \ end="\<end\>"
-    \ fold keepend transparent
+    \ fold transparent
 
 syn match IsabelleComment "--.*$"
 hi def link IsabelleComment Comment
@@ -624,7 +623,7 @@ hi def link IsabelleCommentStart Comment
 hi def link IsabelleCommentContent Comment
 
 hi link IsabelleText String
-hi link IsabelleMarkup Keyword
+" hi link IsabelleMarkup Keyword
 
 hi link IsabelleCommand           Keyword
 hi link IsabelleCommandPart       Operator
@@ -643,7 +642,9 @@ hi link IsabelleCommandMethod     Statement
 hi link IsabelleCommandMethodMod  Statement
 hi link IsabelleCommandBigMethod  Special
 
-hi Normal guibg=bg guifg=fg
+" Conceal highlighting can be annoying
+hi clear Conceal
+hi link Conceal                   Operator
 
 " Jedit-style autocompletion. This is off by default because it can
 " significantly slow Vim down. To use this functionality, put something like
